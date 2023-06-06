@@ -9,24 +9,62 @@
 
 ```
 public class Main {
- public static void main(String[] args)
- { 
- int[] array = {1, 2, 3, 4, 5};
-  int index = 5; // Invalid index causing the error
-  int element = array[index]; 
-  System.out.println("Element at index " + index + ": " + element); } 
+  private static int index = 0; // Shared variable
+
+  public static void main(String[] args) {
+    int[] array = {1, 2, 3, 4, 5};
+    
+    // Start two threads that race to increment the index
+    Thread thread1 = new Thread(() -> {
+      for (int i = 0; i < 1_000_000; i++) {
+        incrementIndex();
+      }
+    });
+    
+    Thread thread2 = new Thread(() -> {
+      for (int i = 0; i < 1_000_000; i++) {
+        incrementIndex();
+      }
+    });
+    
+    thread1.start();
+    thread2.start();
+    
+    try {
+      thread1.join();
+      thread2.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    
+    // Access the array with the potentially incorrect index
+    int element = array[index];
+    System.out.println("Element at index " + index + ": " + element);
   }
+  
+  private static void incrementIndex() {
+    // Simulate a race condition by introducing a delay
+    try {
+      Thread.sleep(1);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    
+    // Increment the shared index variable
+    index++;
+  }
+}
  ```
 
 ### Detail the symptom you're seeing. Be specific; include both what you're seeing and what you expected to see instead. Screenshots are great, copy-pasted terminal output is also great. Avoid saying “it doesn't work”.
 
-I'm experiencing an issue while running my Java program. I've attached a description of the symptom and a guess at the possible bug. I'd appreciate any help in resolving this.
+I'm experiencing an race condition error while accessing an array with an index variable shared between multiple threads.
 
-##### Symptom: When I execute the Java program, I get an "IndexOutOfBoundsException" error.
+##### Symptom: When I execute the Java program, I get an "Unpredictable Index Access" error.
 
 ### Detail the failure-inducing input and context. That might mean any or all of the command you're running, a test case, command-line arguments, working directory, even the last few commands you ran. Do your best to provide as much context as you can.
 
-I suspect the error might be occurring due to an incorrect array index assignment in my code.
+I suspect the error might be occurring due to an incorrect synchronization mechanisms 
 
 - Directory: /home/user/project/
 - Java file: /home/user/project/Main.java
@@ -45,7 +83,7 @@ java Main
 ```
 ### TA: 
 
-Hi there! It looks like you're encountering an "IndexOutOfBoundsException" error. To investigate further, could you please provide the output of the following command in your terminal:
+Hi there! It looks like you're encountering an "Unpredictable Index Access" error. To investigate further, could you please provide the output of the following command in your terminal:
 ```
 java -version
 ```
@@ -55,17 +93,54 @@ java -version
 java version "1.8.0_112"
 ```
 
-### TA: Upon analyzing the code and the error message, it appears that the issue is caused by attempting to access an element of  array using an invalid index. To fix the bug, you need to ensure that the index is within the valid range of the array.
+### TA: Upon analyzing the code and the error message, it appears that the issue is caused by multiple threads trying to access and manipulate shared data concurrently, resulting in unpredictable outcomes due to the timing and interleaving of the threads. In your code, the index variable is shared between thread1 and thread2, and both threads increment it without proper synchronization. This can lead to unexpected values and index access.
 
 In the given code snippet:
 ```
-int[] array = {1, 2, 3, 4, 5};
-int index = 5; // Invalid index causing the error
+public class Main {
+  private static int index = 0; // Shared variable
+  private static final Object lock = new Object(); // Lock object for synchronization
 
-int element = array[index];
-System.out.println("Element at index " + index + ": " + element);
+  public static void main(String[] args) {
+    int[] array = {1, 2, 3, 4, 5};
+
+    Thread thread1 = new Thread(() -> {
+      for (int i = 0; i < 1_000_000; i++) {
+        incrementIndex();
+      }
+    });
+
+    Thread thread2 = new Thread(() -> {
+      for (int i = 0; i < 1_000_000; i++) {
+        incrementIndex();
+      }
+    });
+
+    thread1.start();
+    thread2.start();
+
+    try {
+      thread1.join();
+      thread2.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    synchronized (lock) { // Synchronize the critical section
+      // Access the array with the correct index
+      int element = array[index];
+      System.out.println("Element at index " + index + ": " + element);
+    }
+  }
+
+  private static void incrementIndex() {
+    synchronized (lock) { // Synchronize the critical section
+      index++;
+    }
+  }
+}
 ```
-The index the variable is assigned a value of 5, which exceeds the valid index range for the array (which has indices from 0 to 4). To fix this, you need to adjust the value of index to a valid index within the bounds of the array.
+To correct the code and fix the race condition, you need to ensure proper synchronization when accessing the shared index variable. One way to achieve this is by using the synchronized keyword to create a synchronized block around the critical section of code where the shared variable is accessed.
 
 
 ### Student: Thanks for the response, TA! I tried running the code. And it works!
