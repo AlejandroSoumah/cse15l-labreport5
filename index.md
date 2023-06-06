@@ -59,6 +59,7 @@ public class Main {
 ### Detail the symptom you're seeing. Be specific; include both what you're seeing and what you expected to see instead. Screenshots are great, copy-pasted terminal output is also great. Avoid saying “it doesn't work”.
 
 I'm experiencing an race condition error while accessing an array with an index variable shared between multiple threads.
+I encountered an error related to a race condition while accessing an array with an index variable shared between multiple threads. The code simulates a multi-threaded scenario where two threads race to increment the index, and then the main thread accesses the array using this index. However, the program produces unpredictable results and sometimes throws ArrayIndexOutOfBoundsException.
 
 ##### Symptom: When I execute the Java program, I get an "Unpredictable Index Access" error.
 
