@@ -61,6 +61,17 @@ public class Main {
 I'm experiencing an race condition error while accessing an array with an index variable shared between multiple threads.
 I encountered an error related to a race condition while accessing an array with an index variable shared between multiple threads. The code simulates a multi-threaded scenario where two threads race to increment the index, and then the main thread accesses the array using this index. However, the program produces unpredictable results and sometimes throws ArrayIndexOutOfBoundsException.
 
+For example: 
+```
+Error: java.lang.ArrayIndexOutOfBoundsException: Index 10 out of bounds for length 5
+```
+
+But other times:
+
+```
+Error: java.lang.ArrayIndexOutOfBoundsException: Index 14 out of bounds for length 5
+```
+
 ##### Symptom: When I execute the Java program, I get an "Unpredictable Index Access" error.
 
 ### Detail the failure-inducing input and context. That might mean any or all of the command you're running, a test case, command-line arguments, working directory, even the last few commands you ran. Do your best to provide as much context as you can.
